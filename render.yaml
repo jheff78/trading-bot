@@ -1,0 +1,7 @@
+services:
+  - type: worker
+    name: trading-bot
+    runtime: docker
+    repo: https://github.com/seu-usuario/trading-bot
+    branch: main
+    plan: free
