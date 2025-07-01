@@ -1,6 +1,3 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 import time
 import pandas as pd
 from ta.momentum import RSIIndicator
@@ -78,34 +75,19 @@ def analisar_confluencias(closes):
 
 def executar_entrada(tipo):
     hora = time.strftime("%Y-%m-%d %H:%M:%S")
-    try:
-        if tipo == "COMPRA":
-            driver.find_element(By.XPATH, "//button[contains(text(),'COMPRAR')]").click()
-        elif tipo == "VENDA":
-            driver.find_element(By.XPATH, "//button[contains(text(),'VENDER')]").click()
-        print(f"🎯 Entrada realizada: {tipo}")
+    resultado = calcular_resultado()
+    lucro_pct = ((banca_atual - banca_inicial) / banca_inicial) * 100
 
-        resultado = calcular_resultado()
-        lucro_pct = ((banca_atual - banca_inicial) / banca_inicial) * 100
+    with open("log_operacoes.csv", "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([hora, tipo, resultado, f"{banca_atual:.2f}", f"{lucro_pct:.2f}%"])
 
-        with open("log_operacoes.csv", "a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([hora, tipo, resultado, f"{banca_atual:.2f}", f"{lucro_pct:.2f}%"])
-
-        enviar_telegram(f"📈 Entrada: {tipo}\n🎯 Resultado: {resultado}\n💰 Banca: {banca_atual:.2f}\n📊 Lucro: {lucro_pct:.2f}%")
-    except Exception as e:
-        print("❌ Erro na entrada:", e)
+    enviar_telegram(f"📈 Entrada: {tipo}\n🎯 Resultado: {resultado}\n💰 Banca: {banca_atual:.2f}\n📊 Lucro: {lucro_pct:.2f}%")
 
 def capturar_precos_mock():
     return pd.Series([1.1670, 1.1672, 1.1675, 1.1673, 1.1676, 1.1679, 1.1680])
 
-# === Início ===
-options = Options()
-options.add_argument("--start-maximized")
-driver = webdriver.Chrome(options=options)
-driver.get("https://trade.avalonbroker.com")
-input("⚠️ Faça login e pressione ENTER para iniciar...")
-
+# === Início do loop ===
 while True:
     if verificar_metas():
         break
